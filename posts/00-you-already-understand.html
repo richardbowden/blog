@@ -157,11 +157,11 @@
     </div>
   </div>
 
-  <p class="fade-in">Those numbers might look laughably small, but here's the thing: microcontrollers don't need to run a web browser, an operating system, or Slack. They typically do one job, and they do it with incredible precision. That's their superpower.</p>
+  <p class="fade-in">Those numbers might look laughably small, but microcontrollers don't need to run a web browser, an operating system, or Slack. They do one job, and they do it with incredible precision. That's their superpower.</p>
 
   <div class="analogy fade-in">
     <div class="analogy-label">Web dev analogy</div>
-    <p>Think of your laptop as a general-purpose restaurant kitchen that can cook any cuisine. A microcontroller is more like a dedicated rice cooker. It does one thing, but it does it perfectly, cheaply, and with almost no supervision.</p>
+    <p>Think of your laptop as a general-purpose restaurant kitchen that can cook any cuisine. A microcontroller is more like a dedicated rice cooker. It does one thing, but it does it perfectly and cheaply, with almost no supervision.</p>
   </div>
 
   <a href="https://www.espressif.com/en/products/socs/esp32" class="link-card fade-in" target="_blank">
@@ -240,7 +240,7 @@
 
   <p class="fade-in">You'll notice the circuit above includes a component labelled "330Ω." That's a <strong>resistor</strong>, and it's one of the most basic electronic components you'll encounter.</p>
 
-  <p class="fade-in">A resistor does exactly what the name suggests: it resists the flow of electrical current. Think of water flowing through a pipe. The voltage is like water pressure, the current is the amount of water flowing, and a resistor is a narrower section of pipe that limits how much water can pass through.</p>
+  <p class="fade-in">A resistor resists the flow of electrical current. Think of water flowing through a pipe. The voltage is like water pressure, the current is the amount of water flowing, and a resistor is a narrower section of pipe that limits how much water can pass through.</p>
 
   <p class="fade-in">Without the resistor in our LED circuit, too much current would flow through the LED and it would burn out almost immediately. The resistor limits the current to a safe level. The value "330Ω" (330 ohms) is chosen specifically for common LEDs running at 3.3V, and the maths behind it comes from <strong>Ohm's Law</strong>, which relates voltage, current, and resistance.</p>
 
@@ -298,7 +298,7 @@
 
   <h2 class="fade-in">How Your Code Actually Controls Hardware</h2>
 
-  <p class="fade-in">Here's where things get really interesting, and really different from web development.</p>
+  <p class="fade-in">Here's where things get interesting, and genuinely different from web development.</p>
 
   <p class="fade-in">In the browser, when you write <code>element.style.color = "red"</code>, you're calling into a rendering engine that interprets your instruction and eventually updates pixels on a screen. There are many layers between your code and the physical result.</p>
 
@@ -367,7 +367,7 @@
 
   <h2 class="fade-in">What Can You Actually Build With This?</h2>
 
-  <p class="fade-in">Everything we've covered, GPIO, inputs, outputs, interrupts, is the foundation. With just these basics, people build real products and projects:</p>
+  <p class="fade-in">Everything we've covered (GPIO, inputs, outputs, interrupts) is the foundation. With just these basics, people build real products and projects:</p>
 
   <p class="fade-in"><strong>Home automation.</strong> Reading temperature and humidity sensors, controlling relays to switch lights and fans, sending data over WiFi to a dashboard. The ESP32 has WiFi built in, so your web skills translate directly when building the interface.</p>
 
@@ -395,14 +395,14 @@
 
   <h2 class="fade-in">Coming Up in This Series</h2>
 
-  <p class="fade-in">This post covered the absolute basics: what a microcontroller is, what GPIO pins do, and the two fundamental ways to interact with hardware. The rest of the series will build on this foundation, one concept at a time:</p>
+  <p class="fade-in">This post covered the basics: what a microcontroller is, what GPIO pins do, and the two ways to interact with hardware. The rest of the series builds from there:</p>
 
   <ul class="next-list fade-in">
-    <li><span class="next-num">01</span><span><strong>CPUs and GPIO in Depth</strong> — Registers, memory-mapped I/O, and what's happening at the hardware level when you set a pin high.</span></li>
-    <li><span class="next-num">02</span><span><strong>Timers and PWM</strong> — How to generate precise waveforms that can dim LEDs, control motor speeds, and produce audio tones.</span></li>
-    <li><span class="next-num">03</span><span><strong>Talking to Other Devices</strong> — UART, SPI, and I²C: the protocols that let chips communicate with sensors, displays, and each other.</span></li>
-    <li><span class="next-num">04</span><span><strong>Analog In, Analog Out</strong> — Reading real-world values like temperature and light intensity, and generating smooth analog signals.</span></li>
-    <li><span class="next-num">05</span><span><strong>Power, Sleep, and Battery Life</strong> — How embedded systems run for months or years on a single battery.</span></li>
+    <li><span class="next-num">01</span><span><strong>CPUs and GPIO in Depth.</strong> Registers, memory-mapped I/O, and what's happening at the hardware level when you set a pin high.</span></li>
+    <li><span class="next-num">02</span><span><strong>Timers and PWM.</strong> How to generate precise waveforms that can dim LEDs, control motor speeds, and produce audio tones.</span></li>
+    <li><span class="next-num">03</span><span><strong>Talking to Other Devices.</strong> UART, SPI, and I²C: the protocols that let chips communicate with sensors, displays, and each other.</span></li>
+    <li><span class="next-num">04</span><span><strong>Analog In, Analog Out.</strong> Reading real-world values like temperature and light intensity, and generating smooth analog signals.</span></li>
+    <li><span class="next-num">05</span><span><strong>Power, Sleep, and Battery Life.</strong> How embedded systems run for months or years on a single battery.</span></li>
   </ul>
 
   <div class="post-footer fade-in">
