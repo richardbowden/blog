@@ -1,0 +1,303 @@
+:root {
+  --bg: #faf8f4;
+  --text: #2a2520;
+  --text-muted: #6b6560;
+  --accent: #c44b2b;
+  --accent-glow: #e8603e;
+  --green: #2d8a56;
+  --green-light: #d4eddc;
+  --blue: #2b6cc4;
+  --blue-light: #dce8f8;
+  --yellow: #e8a820;
+  --yellow-light: #fdf3d7;
+  --border: #e0dcd6;
+  --card: #ffffff;
+  --code-bg: #1e1e2e;
+  --code-text: #cdd6f4;
+  --pin-high: #2d8a56;
+  --pin-low: #8b8580;
+  --pin-float: #e8a820;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.72;
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-container {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 60px 24px 120px;
+}
+
+.series-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: block;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 20px;
+  color: var(--text-muted);
+  margin-bottom: 48px;
+  line-height: 1.6;
+}
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.3;
+  margin: 64px 0 20px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 22px;
+  margin: 40px 0 12px;
+  color: var(--text);
+}
+
+p { margin-bottom: 18px; }
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(196, 75, 43, 0.3);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+a:hover { text-decoration-color: var(--accent); }
+
+strong { font-weight: 600; }
+
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.88em;
+  background: rgba(0,0,0,0.06);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 20px 24px;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 20px 0 24px;
+}
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Callout boxes */
+.callout {
+  background: var(--yellow-light);
+  border-left: 4px solid var(--yellow);
+  padding: 20px 24px;
+  border-radius: 0 8px 8px 0;
+  margin: 28px 0;
+  font-size: 17px;
+}
+
+/* Analogy boxes */
+.analogy {
+  background: var(--blue-light);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  font-size: 17px;
+  position: relative;
+}
+.analogy::before {
+  content: "💡";
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  font-size: 22px;
+  background: var(--bg);
+  padding: 0 6px;
+  border-radius: 50%;
+}
+.analogy .analogy-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+
+/* Link cards */
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 20px 0;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.link-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px rgba(196,75,43,0.08);
+}
+.link-card .link-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blue-light);
+  border-radius: 8px;
+}
+.link-card .link-body { flex: 1; }
+.link-card .link-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+}
+.link-card .link-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+/* Demo containers */
+.demo-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 32px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.demo-header {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.015);
+}
+.demo-body {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.demo-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  padding: 10px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+.demo-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+.demo-caption {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 400px;
+}
+
+/* Navigation */
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.post-nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.post-nav a:hover { color: var(--accent); }
+
+.post-nav-next {
+  margin-left: auto;
+}
+
+/* Post footer */
+.post-footer {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.post-footer a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 12px 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+.post-footer a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Scroll animations */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

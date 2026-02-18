@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>00: You Already Understand More Than You Think | Embedded for Web Devs</title>
+<meta name="description" content="Microcontrollers, GPIO pins, voltage, resistors, and interrupts explained through web dev analogies and interactive demos.">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/shared.css">
+<style>
+  /* ---- MCU comparison ---- */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .compare-item {
+    text-align: center;
+    padding: 24px 16px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  .compare-item .item-icon { font-size: 40px; margin-bottom: 10px; }
+  .compare-item .item-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .compare-item .item-value {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .compare-item .item-note {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ---- LED circuit ---- */
+  .led-demo { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .circuit-visual { position: relative; width: 320px; height: 180px; }
+  .mcu-box {
+    position: absolute; left: 0; top: 30px; width: 100px; height: 120px;
+    background: var(--code-bg); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #cdd6f4; font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .mcu-box .mcu-label { font-size: 11px; opacity: 0.6; margin-bottom: 2px; }
+  .mcu-box .pin-state { font-size: 20px; font-weight: 700; transition: color 0.3s; }
+  .mcu-box .pin-state.high { color: #a6e3a1; }
+  .mcu-box .pin-state.low { color: #6b6560; }
+  .wire { position: absolute; top: 88px; left: 100px; width: 80px; height: 3px; background: #6b6560; transition: background 0.3s; }
+  .wire.powered { background: var(--green); }
+  .led-visual { position: absolute; top: 55px; left: 190px; width: 50px; height: 70px; display: flex; flex-direction: column; align-items: center; }
+  .led-bulb {
+    width: 36px; height: 36px; border-radius: 50%; background: #d1d1d1;
+    transition: background 0.3s, box-shadow 0.3s; border: 2px solid #bbb;
+  }
+  .led-bulb.on {
+    background: #6de368;
+    box-shadow: 0 0 20px rgba(109,227,104,0.6), 0 0 60px rgba(109,227,104,0.2);
+    border-color: #5bc856;
+  }
+  .led-legs { width: 14px; height: 20px; border-left: 3px solid #999; border-right: 3px solid #999; }
+  .resistor-visual {
+    position: absolute; top: 78px; left: 250px; width: 50px; height: 24px;
+    background: repeating-linear-gradient(90deg, #d4a56a 0px, #d4a56a 5px, #8b4513 5px, #8b4513 7px, #d4a56a 7px, #d4a56a 10px, #ff6347 10px, #ff6347 12px, #d4a56a 12px, #d4a56a 17px);
+    border-radius: 4px; border: 1px solid #b8956a;
+  }
+  .resistor-label { position: absolute; top: 110px; left: 248px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); text-align: center; width: 54px; }
+  .ground-symbol { position: absolute; top: 68px; right: 4px; font-size: 28px; color: var(--text-muted); }
+  .ground-label { position: absolute; top: 108px; right: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .wire2 { position: absolute; top: 88px; left: 240px; width: 10px; height: 3px; background: #6b6560; }
+  .wire3 { position: absolute; top: 88px; left: 300px; width: 16px; height: 3px; background: #6b6560; }
+  .demo-btn.active { background: var(--green); border-color: var(--green); color: white; }
+
+  /* ---- Voltage bar ---- */
+  .voltage-demo { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; justify-content: center; }
+  .voltage-bar-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .voltage-bar-track { width: 60px; height: 160px; background: #eee; border-radius: 8px; position: relative; overflow: hidden; border: 1px solid var(--border); }
+  .voltage-bar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--green); border-radius: 0 0 7px 7px; transition: height 0.5s ease; }
+  .voltage-bar-label { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; transition: color 0.3s; }
+  .voltage-bar-sublabel { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); }
+  .voltage-meaning { font-size: 15px; max-width: 200px; text-align: center; color: var(--text-muted); line-height: 1.5; }
+
+  /* ---- Floating pin ---- */
+  .float-demo { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+  .float-readout { font-family: 'IBM Plex Mono', monospace; font-size: 48px; font-weight: 700; letter-spacing: 4px; height: 60px; display: flex; align-items: center; transition: color 0.1s; }
+  .float-stream { display: flex; gap: 4px; overflow: hidden; width: 100%; max-width: 500px; justify-content: center; }
+  .float-bit { font-family: 'IBM Plex Mono', monospace; font-size: 14px; width: 22px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.15s; }
+  .float-bit.high { background: var(--green-light); color: var(--green); }
+  .float-bit.low { background: #f0e0e0; color: #a04040; }
+  .float-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .float-btn { font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 8px 20px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); cursor: pointer; color: var(--text); transition: all 0.2s; }
+  .float-btn:hover { border-color: var(--text-muted); }
+  .float-btn.active-pull-up { background: var(--green-light); border-color: var(--green); color: var(--green); }
+  .float-btn.active-pull-down { background: #f0e0e0; border-color: #a04040; color: #a04040; }
+
+  /* ---- Polling vs Interrupt ---- */
+  .poll-vs-int { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 600px; }
+  @media (max-width: 560px) { .poll-vs-int { grid-template-columns: 1fr; } }
+  .pvi-panel { background: var(--bg); border-radius: 10px; padding: 20px; text-align: center; }
+  .pvi-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; }
+  .pvi-cpu-bar { height: 24px; background: #eee; border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
+  .pvi-cpu-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+  .pvi-cpu-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; display: block; }
+  .pvi-log { font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-align: left; height: 90px; overflow: hidden; color: var(--text-muted); line-height: 1.6; }
+  .pvi-log .check { color: var(--pin-float); }
+  .pvi-log .found { color: var(--green); font-weight: 500; }
+  .pvi-log .sleep { color: var(--blue); }
+
+  /* ---- Next up list ---- */
+  .next-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 20px 0 32px; }
+  .next-list li { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 16px; line-height: 1.5; }
+  .next-list .next-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; color: var(--accent); flex-shrink: 0; width: 28px; }
+
+  .footer-note { margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); font-size: 16px; color: var(--text-muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <nav class="post-nav">
+    <a href="../index.html">← All Posts</a>
+    <a href="01-cpus-and-gpio-in-depth.html" class="post-nav-next">Next: CPUs and GPIO in Depth →</a>
+  </nav>
+
+  <span class="series-tag">Embedded Programming for Web Devs · Part 00</span>
+  <h1>You Already Understand More Than You Think</h1>
+  <p class="subtitle">A gentle introduction to microcontrollers, pins, and why your code can make things happen in the real world. No electronics degree required.</p>
+
+  <h2 class="fade-in">So, What Is a Microcontroller?</h2>
+
+  <p class="fade-in">You know how a web server has a CPU, some RAM, and a hard drive? A microcontroller is all of that squeezed onto a single chip the size of your fingernail. It's a complete, self-contained computer.</p>
+
+  <p class="fade-in">The difference is scale. Here's how a popular microcontroller (the ESP32, which costs about $4) compares to the laptop you're reading this on:</p>
+
+  <div class="demo-container fade-in">
+    <div class="demo-header">Your Laptop vs. an ESP32 Microcontroller</div>
+    <div class="demo-body">
+      <div class="compare-grid">
+        <div class="compare-item"><div class="item-icon">💻</div><div class="item-label">Laptop RAM</div><div class="item-value">16 GB</div></div>
+        <div class="compare-item"><div class="item-icon">📟</div><div class="item-label">ESP32 RAM</div><div class="item-value">520 KB</div><div class="item-note">~30,000× smaller</div></div>
+        <div class="compare-item"><div class="item-icon">💻</div><div class="item-label">Laptop CPU</div><div class="item-value">~3 GHz</div></div>
+        <div class="compare-item"><div class="item-icon">📟</div><div class="item-label">ESP32 CPU</div><div class="item-value">240 MHz</div><div class="item-note">~12× slower</div></div>
+        <div class="compare-item"><div class="item-icon">💻</div><div class="item-label">Laptop Cost</div><div class="item-value">~$1,000</div></div>
+        <div class="compare-item"><div class="item-icon">📟</div><div class="item-label">ESP32 Cost</div><div class="item-value">~$4</div><div class="item-note">Has built-in WiFi & Bluetooth</div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="fade-in">Those numbers might look laughably small, but here's the thing: microcontrollers don't need to run a web browser, an operating system, or Slack. They typically do one job, and they do it with incredible precision. That's their superpower.</p>
+
+  <div class="analogy fade-in">
+    <div class="analogy-label">Web dev analogy</div>
+    <p>Think of your laptop as a general-purpose restaurant kitchen that can cook any cuisine. A microcontroller is more like a dedicated rice cooker. It does one thing, but it does it perfectly, cheaply, and with almost no supervision.</p>
+  </div>
+
+  <a href="https://www.espressif.com/en/products/socs/esp32" class="link-card fade-in" target="_blank">
+    <div class="link-icon">📟</div>
+    <div class="link-body">
+      <span class="link-title">ESP32 Overview (Espressif)</span>
+      <span class="link-desc">The official page for one of the most popular microcontrollers. Great place to see what's actually on one of these chips.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">First Things First: What Is "High" and "Low"?</h2>
+
+  <p class="fade-in">In web development, everything is data: strings, numbers, JSON objects. In embedded programming, the most basic unit of communication is <strong>voltage</strong>.</p>
+
+  <p class="fade-in">A microcontroller pin can be in one of two states: <strong>high</strong> (the chip is pushing voltage out, typically 3.3 volts) or <strong>low</strong> (the pin is connected to ground, 0 volts). That's it. Every single thing a microcontroller does in the physical world starts with making pins go high or low.</p>
+
+  <div class="demo-container fade-in" id="voltage-demo">
+    <div class="demo-header">Interactive: High vs Low</div>
+    <div class="demo-body">
+      <div class="voltage-demo">
+        <div class="voltage-bar-container">
+          <div class="voltage-bar-label" id="voltage-value" style="color: var(--pin-low);">0V</div>
+          <div class="voltage-bar-track"><div class="voltage-bar-fill" id="voltage-fill" style="height: 0%;"></div></div>
+          <div class="voltage-bar-sublabel" id="voltage-state">LOW (0)</div>
+        </div>
+        <div class="voltage-meaning" id="voltage-meaning">The pin is connected to ground. No current flows. The LED is off.</div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="demo-btn" onclick="setVoltage(false)">Set LOW</button>
+        <button class="demo-btn" onclick="setVoltage(true)">Set HIGH</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="fade-in">When you write code for a microcontroller, setting a pin "high" is the equivalent of <code>element.style.display = "block"</code> in the browser. It's the simplest possible action, and everything else builds on top of it.</p>
+
+  <h2 class="fade-in">GPIO: The Pins That Connect to the Real World</h2>
+
+  <p class="fade-in"><strong>GPIO</strong> stands for General Purpose Input/Output. These are the physical metal pins on a microcontroller chip that you can connect wires to. Each one can be configured independently as either an <strong>input</strong> (reading a signal from the outside world) or an <strong>output</strong> (sending a signal out).</p>
+
+  <p class="fade-in">A typical microcontroller has anywhere from 10 to 40+ GPIO pins. Each one is like a tiny, individually addressable port between your software and the physical world.</p>
+
+  <div class="analogy fade-in">
+    <div class="analogy-label">Web dev analogy</div>
+    <p>GPIO pins are like the DOM API for the physical world. Just as <code>document.getElementById()</code> lets your JavaScript interact with elements on a page, GPIO lets your code interact with real, physical things: LEDs, buttons, motors, sensors, and displays.</p>
+  </div>
+
+  <h3 class="fade-in">Output: Making Things Happen</h3>
+
+  <p class="fade-in">When a GPIO pin is configured as an output, your code controls whether it's high or low. Connect an LED (with a resistor to limit the current, otherwise you'd burn it out), and you can turn it on and off. Connect a relay, and you can switch a mains-powered appliance. Connect a motor driver, and you can spin a motor.</p>
+
+  <p class="fade-in">Here's what that looks like as a circuit. Click the button to toggle the pin:</p>
+
+  <div class="demo-container fade-in" id="led-demo">
+    <div class="demo-header">Interactive: GPIO Output driving an LED</div>
+    <div class="demo-body">
+      <div class="led-demo">
+        <div class="circuit-visual">
+          <div class="mcu-box"><span class="mcu-label">GPIO Pin 5</span><span class="pin-state low" id="led-pin-state">0</span></div>
+          <div class="wire" id="led-wire"></div>
+          <div class="led-visual"><div class="led-bulb" id="led-bulb"></div><div class="led-legs"></div></div>
+          <div class="wire2"></div>
+          <div class="resistor-visual"></div>
+          <div class="resistor-label">330Ω</div>
+          <div class="wire3"></div>
+          <div class="ground-symbol">⏚</div>
+          <div class="ground-label">GND</div>
+        </div>
+        <button class="demo-btn" id="led-toggle-btn" onclick="toggleLED()">Toggle Pin</button>
+        <div class="demo-caption" id="led-caption">Pin 5 is LOW (0V). No current flows. LED is off.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="fade-in">Wait, What Is a Resistor?</h3>
+
+  <p class="fade-in">You'll notice the circuit above includes a component labelled "330Ω." That's a <strong>resistor</strong>, and it's one of the most basic electronic components you'll encounter.</p>
+
+  <p class="fade-in">A resistor does exactly what the name suggests: it resists the flow of electrical current. Think of water flowing through a pipe. The voltage is like water pressure, the current is the amount of water flowing, and a resistor is a narrower section of pipe that limits how much water can pass through.</p>
+
+  <p class="fade-in">Without the resistor in our LED circuit, too much current would flow through the LED and it would burn out almost immediately. The resistor limits the current to a safe level. The value "330Ω" (330 ohms) is chosen specifically for common LEDs running at 3.3V, and the maths behind it comes from <strong>Ohm's Law</strong>, which relates voltage, current, and resistance.</p>
+
+  <a href="https://learn.sparkfun.com/tutorials/resistors/all" class="link-card fade-in" target="_blank">
+    <div class="link-icon">📖</div>
+    <div class="link-body">
+      <span class="link-title">Resistors (SparkFun)</span>
+      <span class="link-desc">A thorough, beginner-friendly guide to what resistors are, how they work, and how to read their colour codes.</span>
+    </div>
+  </a>
+
+  <a href="https://learn.sparkfun.com/tutorials/voltage-current-resistance-and-ohms-law/all" class="link-card fade-in" target="_blank">
+    <div class="link-icon">⚡</div>
+    <div class="link-body">
+      <span class="link-title">Voltage, Current, Resistance, and Ohm's Law (SparkFun)</span>
+      <span class="link-desc">The three fundamental concepts of electronics explained with the water pipe analogy. Essential reading.</span>
+    </div>
+  </a>
+
+  <h3 class="fade-in">Input: Reading the Outside World</h3>
+
+  <p class="fade-in">When a GPIO pin is configured as an input, the microcontroller reads whatever voltage is present on the pin and reports it to your code as a 1 (high) or 0 (low). This is how you detect a button press, read a switch position, or receive a digital signal from a sensor.</p>
+
+  <p class="fade-in">But there's a catch that trips up every beginner: what happens when an input pin has <em>nothing</em> connected to it?</p>
+
+  <h3 class="fade-in">The Floating Pin Problem</h3>
+
+  <p class="fade-in">An unconnected input pin doesn't default to 0. Instead, it "floats," picking up stray electrical noise from nearby circuits, radio waves, and even the 50/60Hz hum from your power lines. The result looks like this:</p>
+
+  <div class="demo-container fade-in" id="float-demo">
+    <div class="demo-header">Interactive: Floating pin vs Pull-up / Pull-down</div>
+    <div class="demo-body">
+      <div class="float-demo">
+        <div class="float-readout" id="float-value">?</div>
+        <div class="float-stream" id="float-stream"></div>
+        <div class="demo-caption" id="float-caption">The pin is floating. It reads random noise. Completely useless.</div>
+        <div class="float-controls">
+          <button class="float-btn" id="btn-float" onclick="setFloatMode('float')">Floating</button>
+          <button class="float-btn" id="btn-pullup" onclick="setFloatMode('pullup')">Pull-up Resistor</button>
+          <button class="float-btn" id="btn-pulldown" onclick="setFloatMode('pulldown')">Pull-down Resistor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="fade-in">A <strong>pull-up resistor</strong> gently connects the pin to the supply voltage, so it reads as 1 by default. A <strong>pull-down resistor</strong> gently connects it to ground, so it reads as 0 by default. Most microcontrollers have these resistors built in, and you just need to enable them in your code. When a button or sensor drives the pin, it easily overpowers the weak pull resistor and changes the state.</p>
+
+  <a href="https://learn.sparkfun.com/tutorials/pull-up-resistors/all" class="link-card fade-in" target="_blank">
+    <div class="link-icon">📖</div>
+    <div class="link-body">
+      <span class="link-title">Pull-up Resistors (SparkFun)</span>
+      <span class="link-desc">Why floating pins are a problem and how pull-up and pull-down resistors fix it.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">How Your Code Actually Controls Hardware</h2>
+
+  <p class="fade-in">Here's where things get really interesting, and really different from web development.</p>
+
+  <p class="fade-in">In the browser, when you write <code>element.style.color = "red"</code>, you're calling into a rendering engine that interprets your instruction and eventually updates pixels on a screen. There are many layers between your code and the physical result.</p>
+
+  <p class="fade-in">On a microcontroller, the gap between code and hardware is almost nonexistent. The chip's hardware peripherals (like GPIO pins) are mapped to specific memory addresses. When your code writes a value to one of these addresses, the hardware responds <strong>directly</strong>. There is no operating system, no driver layer, and no abstraction in between.</p>
+
+  <div class="analogy fade-in">
+    <div class="analogy-label">Web dev analogy</div>
+    <p>Imagine if, instead of calling <code>fetch()</code> to make a network request, you could just write a URL into a specific memory location and the network card would immediately start sending packets. That's roughly how memory-mapped I/O works. Writing to an address <em>is</em> the action.</p>
+  </div>
+
+  <p class="fade-in">This is why embedded programming feels so direct. When you set a bit in a register, the corresponding pin changes voltage within nanoseconds. There's no event loop, no garbage collector, and no asynchronous callback. It just happens.</p>
+
+  <a href="https://www.allaboutcircuits.com/technical-articles/introduction-to-microcontroller-gpio/" class="link-card fade-in" target="_blank">
+    <div class="link-icon">🔧</div>
+    <div class="link-body">
+      <span class="link-title">Introduction to GPIO (All About Circuits)</span>
+      <span class="link-desc">A more detailed technical walkthrough of GPIO registers and how memory-mapped I/O works.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">Polling vs Interrupts: Two Ways to Wait for Things</h2>
+
+  <p class="fade-in">Let's say you have a button connected to a GPIO input pin and you want your code to respond when someone presses it. There are two fundamentally different approaches.</p>
+
+  <h3 class="fade-in">Polling: Checking Over and Over</h3>
+
+  <p class="fade-in">The simplest approach is to check the pin state in a loop, over and over, as fast as the CPU can go. This is called <strong>polling</strong>. It works, but it's like refreshing your email inbox every second to see if you've got a new message. Technically effective. Enormously wasteful.</p>
+
+  <h3 class="fade-in">Interrupts: "Call Me When It Happens"</h3>
+
+  <p class="fade-in"><strong>Interrupts</strong> are the embedded equivalent of event listeners. Instead of checking constantly, you tell the hardware "when this pin changes, run this function." The CPU is then free to do other things, or even go to sleep to save power. The moment the pin state changes, the hardware automatically pauses whatever the CPU was doing, runs your handler function, and then resumes.</p>
+
+  <div class="demo-container fade-in" id="poll-int-demo">
+    <div class="demo-header">Animation: Polling vs Interrupts</div>
+    <div class="demo-body">
+      <div class="poll-vs-int">
+        <div class="pvi-panel">
+          <div class="pvi-title">Polling</div>
+          <div class="pvi-cpu-bar"><div class="pvi-cpu-fill" id="poll-cpu" style="width: 95%; background: var(--pin-float);"></div></div>
+          <span class="pvi-cpu-label">CPU: 95% busy checking</span>
+          <div class="pvi-log" id="poll-log"></div>
+        </div>
+        <div class="pvi-panel">
+          <div class="pvi-title">Interrupt</div>
+          <div class="pvi-cpu-bar"><div class="pvi-cpu-fill" id="int-cpu" style="width: 5%; background: var(--green);"></div></div>
+          <span class="pvi-cpu-label">CPU: 5% busy (sleeping)</span>
+          <div class="pvi-log" id="int-log"></div>
+        </div>
+      </div>
+      <button class="demo-btn" id="press-btn" onclick="simulatePress()">🔘 Press the Button</button>
+    </div>
+  </div>
+
+  <div class="analogy fade-in">
+    <div class="analogy-label">Web dev analogy</div>
+    <p>Polling is like using <code>setInterval(() => checkForUpdates(), 1)</code>. Interrupts are like using <code>element.addEventListener("click", handler)</code>. The browser's event model is actually inspired by hardware interrupts.</p>
+  </div>
+
+  <a href="https://learn.adafruit.com/cooperative-multitasking-in-circuitpython-with-asyncio/overview" class="link-card fade-in" target="_blank">
+    <div class="link-icon">🔄</div>
+    <div class="link-body">
+      <span class="link-title">Cooperative Multitasking (Adafruit)</span>
+      <span class="link-desc">How microcontrollers juggle multiple tasks. Familiar concepts if you've worked with async/await.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">What Can You Actually Build With This?</h2>
+
+  <p class="fade-in">Everything we've covered, GPIO, inputs, outputs, interrupts, is the foundation. With just these basics, people build real products and projects:</p>
+
+  <p class="fade-in"><strong>Home automation.</strong> Reading temperature and humidity sensors, controlling relays to switch lights and fans, sending data over WiFi to a dashboard. The ESP32 has WiFi built in, so your web skills translate directly when building the interface.</p>
+
+  <p class="fade-in"><strong>Robotics.</strong> Reading encoders to know how far a wheel has turned, driving motors through H-bridge controllers, processing sensor data to navigate. Every input and output goes through GPIO.</p>
+
+  <p class="fade-in"><strong>Wearables and IoT devices.</strong> Battery-powered sensors that wake up, take a measurement, transmit data over Bluetooth, and go back to sleep. These devices run for months on a coin cell battery because interrupts let the CPU sleep 99.9% of the time.</p>
+
+  <p class="fade-in"><strong>Musical instruments and audio.</strong> Generating precise waveforms with PWM (which we'll cover in a later post), reading buttons and knobs, driving displays. Microcontrollers are inside most guitar pedals and synthesisers.</p>
+
+  <a href="https://randomnerdtutorials.com/projects-esp32/" class="link-card fade-in" target="_blank">
+    <div class="link-icon">🛠️</div>
+    <div class="link-body">
+      <span class="link-title">ESP32 Projects (Random Nerd Tutorials)</span>
+      <span class="link-desc">Dozens of beginner-friendly projects with step-by-step wiring diagrams and code. A great place to start building.</span>
+    </div>
+  </a>
+
+  <a href="https://learn.adafruit.com/" class="link-card fade-in" target="_blank">
+    <div class="link-icon">🎓</div>
+    <div class="link-body">
+      <span class="link-title">Adafruit Learning System</span>
+      <span class="link-desc">Hundreds of well-written tutorials covering electronics fundamentals, microcontrollers, and project guides.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">Coming Up in This Series</h2>
+
+  <p class="fade-in">This post covered the absolute basics: what a microcontroller is, what GPIO pins do, and the two fundamental ways to interact with hardware. The rest of the series will build on this foundation, one concept at a time:</p>
+
+  <ul class="next-list fade-in">
+    <li><span class="next-num">01</span><span><strong>CPUs and GPIO in Depth</strong> — Registers, memory-mapped I/O, and what's happening at the hardware level when you set a pin high.</span></li>
+    <li><span class="next-num">02</span><span><strong>Timers and PWM</strong> — How to generate precise waveforms that can dim LEDs, control motor speeds, and produce audio tones.</span></li>
+    <li><span class="next-num">03</span><span><strong>Talking to Other Devices</strong> — UART, SPI, and I²C: the protocols that let chips communicate with sensors, displays, and each other.</span></li>
+    <li><span class="next-num">04</span><span><strong>Analog In, Analog Out</strong> — Reading real-world values like temperature and light intensity, and generating smooth analog signals.</span></li>
+    <li><span class="next-num">05</span><span><strong>Power, Sleep, and Battery Life</strong> — How embedded systems run for months or years on a single battery.</span></li>
+  </ul>
+
+  <div class="post-footer fade-in">
+    <a href="../index.html">← All Posts</a>
+    <a href="01-cpus-and-gpio-in-depth.html">Next: CPUs and GPIO in Depth →</a>
+  </div>
+
+  <p class="fade-in footer-note">This series is written from the perspective of someone who spent years building cloud infrastructure before discovering the joy of making software interact with the physical world. If you can write a website, you can learn embedded programming. The concepts are simpler than you think.</p>
+
+</div>
+
+<script src="../assets/js/shared.js"></script>
+<script>
+// ---- Voltage demo ----
+function setVoltage(high) {
+  const fill = document.getElementById('voltage-fill');
+  const value = document.getElementById('voltage-value');
+  const state = document.getElementById('voltage-state');
+  const meaning = document.getElementById('voltage-meaning');
+  if (high) {
+    fill.style.height = '100%'; value.textContent = '3.3V'; value.style.color = 'var(--green)';
+    state.textContent = 'HIGH (1)'; meaning.textContent = 'The pin is driven to 3.3 volts. Current flows through the circuit. The LED is on.';
+  } else {
+    fill.style.height = '0%'; value.textContent = '0V'; value.style.color = 'var(--pin-low)';
+    state.textContent = 'LOW (0)'; meaning.textContent = 'The pin is connected to ground. No current flows. The LED is off.';
+  }
+}
+
+// ---- LED demo ----
+let ledOn = false;
+function toggleLED() {
+  ledOn = !ledOn;
+  const bulb = document.getElementById('led-bulb'), wire = document.getElementById('led-wire');
+  const pinState = document.getElementById('led-pin-state'), caption = document.getElementById('led-caption');
+  const btn = document.getElementById('led-toggle-btn');
+  if (ledOn) {
+    bulb.classList.add('on'); wire.classList.add('powered'); pinState.textContent = '1'; pinState.className = 'pin-state high';
+    caption.textContent = 'Pin 5 is HIGH (3.3V). Current flows through the LED and resistor to ground. LED is on!'; btn.classList.add('active');
+  } else {
+    bulb.classList.remove('on'); wire.classList.remove('powered'); pinState.textContent = '0'; pinState.className = 'pin-state low';
+    caption.textContent = 'Pin 5 is LOW (0V). No current flows. LED is off.'; btn.classList.remove('active');
+  }
+}
+
+// ---- Floating pin demo ----
+let floatMode = 'float';
+function initFloatDemo() {
+  const stream = document.getElementById('float-stream');
+  for (let i = 0; i < 20; i++) {
+    const bit = document.createElement('div'); bit.className = 'float-bit low'; bit.textContent = '0'; stream.appendChild(bit);
+  }
+  setFloatMode('float');
+  setInterval(() => {
+    const value = document.getElementById('float-value'), stream = document.getElementById('float-stream');
+    let v, cls;
+    if (floatMode === 'float') { v = Math.random() > 0.5 ? 1 : 0; cls = v ? 'high' : 'low'; }
+    else if (floatMode === 'pullup') { v = 1; cls = 'high'; }
+    else { v = 0; cls = 'low'; }
+    value.textContent = v; value.style.color = v ? 'var(--green)' : '#a04040';
+    const newBit = document.createElement('div'); newBit.className = 'float-bit ' + cls; newBit.textContent = v;
+    stream.appendChild(newBit);
+    if (stream.children.length > 20) stream.removeChild(stream.firstChild);
+  }, 150);
+}
+function setFloatMode(mode) {
+  floatMode = mode;
+  document.getElementById('btn-float').className = 'float-btn';
+  document.getElementById('btn-pullup').className = 'float-btn';
+  document.getElementById('btn-pulldown').className = 'float-btn';
+  const caption = document.getElementById('float-caption');
+  if (mode === 'float') { document.getElementById('btn-float').classList.add('active-pull-down'); caption.textContent = 'The pin is floating. It reads random noise. Completely useless.'; }
+  else if (mode === 'pullup') { document.getElementById('btn-pullup').classList.add('active-pull-up'); caption.textContent = 'Pull-up enabled. The pin reads a stable 1. Press a button to pull it low.'; }
+  else { document.getElementById('btn-pulldown').classList.add('active-pull-down'); caption.textContent = 'Pull-down enabled. The pin reads a stable 0. A sensor can drive it high.'; }
+}
+
+// ---- Polling vs Interrupt ----
+function initPollDemo() {
+  const pollLog = document.getElementById('poll-log'), intLog = document.getElementById('int-log');
+  setInterval(() => {
+    const line = document.createElement('div'); line.innerHTML = '<span class="check">⟳ check pin... nothing</span>';
+    pollLog.appendChild(line); if (pollLog.children.length > 5) pollLog.removeChild(pollLog.firstChild);
+  }, 400);
+  intLog.innerHTML = '<div class="sleep">💤 sleeping... (using almost no power)</div>';
+}
+function simulatePress() {
+  const pollLog = document.getElementById('poll-log'), intLog = document.getElementById('int-log');
+  const btn = document.getElementById('press-btn');
+  btn.style.transform = 'scale(0.95)'; setTimeout(() => btn.style.transform = '', 150);
+  const pollLine = document.createElement('div'); pollLine.innerHTML = '<span class="found">⟳ check pin... PRESSED! → toggle LED</span>';
+  pollLog.appendChild(pollLine); if (pollLog.children.length > 5) pollLog.removeChild(pollLog.firstChild);
+  intLog.innerHTML = '';
+  const intLine1 = document.createElement('div'); intLine1.innerHTML = '<span class="found">⚡ INTERRUPT! → toggle LED</span>'; intLog.appendChild(intLine1);
+  setTimeout(() => { const intLine2 = document.createElement('div'); intLine2.innerHTML = '<span class="sleep">💤 back to sleep...</span>'; intLog.appendChild(intLine2); }, 800);
+}
+
+document.addEventListener('DOMContentLoaded', () => { initFloatDemo(); initPollDemo(); });
+</script>
+
+</body>
+</html>

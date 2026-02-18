@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embedded Programming for Web Developers</title>
+<meta name="description" content="A hands-on series teaching embedded programming to web developers. Interactive animations, real analogies, no electronics degree required.">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/shared.css">
+<style>
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 56px);
+    margin-bottom: 20px;
+  }
+
+  .hero .subtitle {
+    max-width: 560px;
+    margin: 0 auto 48px;
+  }
+
+  .post-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0 0 64px;
+  }
+
+  .post-list a {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .post-list a:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px rgba(196,75,43,0.08);
+  }
+
+  .post-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 48px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .post-info { flex: 1; }
+
+  .post-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .post-desc {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .post-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .post-tag.live {
+    background: var(--green-light);
+    color: var(--green);
+  }
+  .post-tag.soon {
+    background: var(--yellow-light);
+    color: #9a7214;
+  }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <div class="hero">
+    <span class="series-tag">A Series for Web Developers</span>
+    <h1>Embedded Programming</h1>
+    <p class="subtitle">Learn how microcontrollers work, from GPIO pins to communication protocols. Interactive animations, real-world analogies, and no electronics degree required.</p>
+  </div>
+
+  <ul class="post-list">
+    <li>
+      <a href="posts/00-you-already-understand.html">
+        <span class="post-num">00</span>
+        <div class="post-info">
+          <span class="post-title">You Already Understand More Than You Think</span>
+          <span class="post-desc">Microcontrollers, GPIO pins, voltage, resistors, and interrupts explained through web dev analogies and interactive demos.</span>
+        </div>
+        <span class="post-tag live">Live</span>
+      </a>
+    </li>
+    <li>
+      <a href="posts/01-cpus-and-gpio-in-depth.html">
+        <span class="post-num">01</span>
+        <div class="post-info">
+          <span class="post-title">CPUs and GPIO in Depth</span>
+          <span class="post-desc">Registers, memory-mapped I/O, alternate functions, and what's actually happening at the hardware level when you set a pin high.</span>
+        </div>
+        <span class="post-tag live">Live</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="post-num">02</span>
+        <div class="post-info">
+          <span class="post-title">Timers and PWM</span>
+          <span class="post-desc">Generating precise waveforms that dim LEDs, control motor speeds, and produce audio tones.</span>
+        </div>
+        <span class="post-tag soon">Coming soon</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="post-num">03</span>
+        <div class="post-info">
+          <span class="post-title">Talking to Other Devices</span>
+          <span class="post-desc">UART, SPI, and I²C: the protocols that let chips communicate with sensors, displays, and each other.</span>
+        </div>
+        <span class="post-tag soon">Coming soon</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="post-num">04</span>
+        <div class="post-info">
+          <span class="post-title">Analog In, Analog Out</span>
+          <span class="post-desc">Reading real-world values like temperature and light, and generating smooth analog signals with DACs.</span>
+        </div>
+        <span class="post-tag soon">Coming soon</span>
+      </a>
+    </li>
+    <li>
+      <a href="#">
+        <span class="post-num">05</span>
+        <div class="post-info">
+          <span class="post-title">Power, Sleep, and Battery Life</span>
+          <span class="post-desc">How embedded systems run for months or years on a single battery.</span>
+        </div>
+        <span class="post-tag soon">Coming soon</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="footer">
+    <p>Written by someone who spent years building cloud infrastructure before discovering the joy of making software interact with the physical world. If you can write a website, you can learn embedded programming.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

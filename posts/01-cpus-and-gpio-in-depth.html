@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01: CPUs and GPIO in Depth | Embedded for Web Devs</title>
+<meta name="description" content="Registers, memory-mapped I/O, alternate functions, and what's actually happening at the hardware level when you set a pin high.">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/shared.css">
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 28px;
+    font-size: 16px;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.02);
+  }
+  td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .next-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 20px 0 32px; }
+  .next-list li { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 16px; line-height: 1.5; }
+  .next-list .next-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; color: var(--accent); flex-shrink: 0; width: 28px; }
+
+  .footer-note { margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); font-size: 16px; color: var(--text-muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <nav class="post-nav">
+    <a href="../index.html">← All Posts</a>
+    <a href="00-you-already-understand.html" style="margin-right: auto; margin-left: 24px;">← Prev</a>
+  </nav>
+
+  <span class="series-tag">Embedded Programming for Web Devs · Part 01</span>
+  <h1>CPUs and GPIO in Depth</h1>
+  <p class="subtitle">Registers, memory-mapped I/O, and what's actually happening at the hardware level when you set a pin high.</p>
+
+  <div class="callout fade-in">
+    <strong>Prerequisites:</strong> This post builds on <a href="00-you-already-understand.html">Part 00</a>, where we covered what a microcontroller is, what GPIO pins do, and the basics of high/low, pull resistors, and interrupts. If terms like "floating pin" or "pull-up resistor" are new to you, start there.
+  </div>
+
+  <h2 class="fade-in">The Microcontroller as a Self-Contained System</h2>
+
+  <p class="fade-in">In Part 00 we compared a microcontroller to a laptop. Now let's look more closely at what's actually inside one. A typical microcontroller like the STM32F103 contains a 72MHz ARM Cortex-M3 CPU, 64KB of flash memory for your program, 20KB of RAM for runtime data, and dozens of hardware peripherals, all on a single chip.</p>
+
+  <p class="fade-in">To put the memory in perspective: 64KB of flash is enough to hold tens of thousands of lines of compiled C code. 20KB of RAM is enough to manage sensor readings, communication buffers, and application state for most embedded projects. You won't be loading images or parsing megabytes of JSON, but you'll have more than enough for the kind of work microcontrollers are designed to do.</p>
+
+  <p class="fade-in">The CPU clock speed matters too, but perhaps not in the way you'd expect. At 72MHz, the CPU executes one instruction roughly every 14 nanoseconds. That's fast enough to toggle a GPIO pin millions of times per second, process incoming serial data in real time, and run control algorithms for motors and robotics. The reason microcontrollers use lower clock speeds isn't a lack of capability; it's a deliberate trade-off for lower power consumption and simpler, more predictable timing.</p>
+
+  <a href="https://www.st.com/en/microcontrollers-microprocessors/stm32f103.html" class="link-card fade-in" target="_blank">
+    <div class="link-icon">📟</div>
+    <div class="link-body">
+      <span class="link-title">STM32F103 Product Page (ST Microelectronics)</span>
+      <span class="link-desc">The datasheet and reference manual for one of the most popular ARM microcontrollers. Don't worry if it looks dense; we'll decode the relevant parts throughout this series.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">Memory-Mapped I/O: The Big Idea</h2>
+
+  <p class="fade-in">In Part 00 we introduced the concept that writing to a memory address can control hardware. Let's unpack how that actually works.</p>
+
+  <p class="fade-in">A microcontroller's memory space is divided into regions. Some addresses point to flash memory (where your program lives). Some point to RAM (where your variables live). And some addresses point directly to hardware peripherals. This last category is what makes embedded programming fundamentally different from application development.</p>
+
+  <p class="fade-in">On an STM32, the GPIO peripherals live at addresses starting from <code>0x40010800</code>. Each GPIO port (a group of 16 pins) occupies a block of memory at a known offset. When your code writes a value to one of these addresses, the CPU puts the value onto the internal memory bus, and the GPIO hardware responds by changing the electrical state of physical pins.</p>
+
+  <p class="fade-in">Here's what that looks like in C:</p>
+
+  <pre><code>// Set pin 5 of GPIO port A to HIGH
+*(volatile uint32_t *)0x40010810 |= (1 << 5);</code></pre>
+
+  <p class="fade-in">Let's break that down piece by piece. <code>0x40010810</code> is the address of the Output Data Register (ODR) for GPIO port A. The <code>(volatile uint32_t *)</code> tells the compiler to treat this number as a pointer to a 32-bit hardware register. The <code>|= (1 << 5)</code> sets bit 5 to 1 without disturbing the other bits. And <code>volatile</code> prevents the compiler from optimising away the write, since the compiler can't know that writing to this address has a physical side effect.</p>
+
+  <p class="fade-in">In practice, you rarely write raw addresses like this. Chip manufacturers provide header files that give these addresses human-readable names:</p>
+
+  <pre><code>// Same thing, but readable
+GPIOA->ODR |= (1 << 5);</code></pre>
+
+  <p class="fade-in">Behind the scenes, <code>GPIOA</code> is just a pointer to the address <code>0x40010800</code>, and <code>ODR</code> is a field at offset <code>0x10</code> within that structure. The compiler resolves it to the same memory access.</p>
+
+  <a href="https://www.embedded.com/introduction-to-arm-cortex-m-memory-map/" class="link-card fade-in" target="_blank">
+    <div class="link-icon">🧠</div>
+    <div class="link-body">
+      <span class="link-title">ARM Cortex-M Memory Map (Embedded.com)</span>
+      <span class="link-desc">How the memory space is organised on ARM microcontrollers, and why peripheral addresses end up where they do.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">GPIO Registers: The Full Picture</h2>
+
+  <p class="fade-in">In Part 00, we treated GPIO as a simple on/off switch. In reality, each GPIO port exposes a set of registers that give you fine-grained control over every aspect of the pin's behaviour. Using the STM32 as our example (most modern microcontrollers have similar structures), here's what you get:</p>
+
+  <table class="fade-in">
+    <thead>
+      <tr><th>Register</th><th>What It Does</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>MODER</td><td>Configures each pin's mode: input, output, alternate function, or analog. Two bits per pin, so a 32-bit register covers all 16 pins.</td></tr>
+      <tr><td>OTYPER</td><td>Sets each output as push-pull (drives both high and low) or open-drain (drives low only, floats when high). One bit per pin.</td></tr>
+      <tr><td>OSPEEDR</td><td>Controls the output slew rate: how fast the voltage transitions between states. Faster means cleaner signals at high frequencies, but more electromagnetic noise.</td></tr>
+      <tr><td>PUPDR</td><td>Enables the internal pull-up or pull-down resistor. This is the register you configure to solve the floating pin problem from Part 00.</td></tr>
+      <tr><td>IDR</td><td>Input Data Register. Read-only. Each bit reflects the current voltage state of the corresponding pin.</td></tr>
+      <tr><td>ODR</td><td>Output Data Register. Read-write. Setting a bit drives the corresponding pin high; clearing it drives low.</td></tr>
+      <tr><td>BSRR</td><td>Bit Set/Reset Register. Write-only. Lets you set and clear specific pins in a single atomic operation.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="fade-in">Why BSRR Exists</h3>
+
+  <p class="fade-in">The BSRR register solves a subtle but important problem. Suppose you want to set pin 5 high and pin 3 low. Using ODR, you'd read the current value, modify two bits, and write it back. But what if an interrupt fires between the read and the write, and the interrupt handler also modifies ODR? Your write would overwrite the interrupt handler's changes. This is called a <strong>race condition</strong>, and it creates bugs that only appear intermittently, making them extremely difficult to track down.</p>
+
+  <p class="fade-in">BSRR avoids this entirely. The lower 16 bits specify which pins to set high, and the upper 16 bits specify which pins to clear. The hardware processes the entire write as a single atomic operation:</p>
+
+  <pre><code>// Set pin 5 high AND pin 3 low, atomically
+GPIOA->BSRR = (1 << 5) | (1 << (3 + 16));</code></pre>
+
+  <p class="fade-in">No read-modify-write cycle means no window for an interrupt to interfere. This kind of hardware-level atomicity is something you rarely think about in application programming, but it becomes second nature in embedded work.</p>
+
+  <h2 class="fade-in">Alternate Functions: One Pin, Many Jobs</h2>
+
+  <p class="fade-in">A chip like the STM32F103 has 48 physical pins, but it supports dozens of peripherals: multiple serial ports (UART), SPI buses, I²C buses, timers, ADC channels, and more. There aren't enough pins for every peripheral to have dedicated connections, so pins are multiplexed.</p>
+
+  <p class="fade-in">Each GPIO pin can be switched from general-purpose mode into an <strong>alternate function</strong> mode, where it's internally routed to a specific peripheral. For example, pin PA9 could be a regular GPIO, or the transmit line for UART1, depending on how you configure the MODER register.</p>
+
+  <p class="fade-in">This flexibility means that part of designing any embedded project is working out the <strong>pin assignment</strong> before you write code. You decide which peripherals you need, check the datasheet to see which pins support those alternate functions, and plan your circuit board accordingly. Some pins only support specific functions, so this puzzle-solving is a real part of the design process.</p>
+
+  <a href="https://learn.adafruit.com/using-atsamd21-sercom-to-add-more-spi-i2c-serial-ports/overview" class="link-card fade-in" target="_blank">
+    <div class="link-icon">🔀</div>
+    <div class="link-body">
+      <span class="link-title">Pin Multiplexing in Practice (Adafruit)</span>
+      <span class="link-desc">A practical walkthrough of assigning alternate functions to pins on a real microcontroller.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">Output Speed and Signal Integrity</h2>
+
+  <p class="fade-in">We briefly mentioned output speed in Part 00. Let's go deeper, because this is where embedded programming starts to overlap with electrical engineering.</p>
+
+  <p class="fade-in">When a GPIO pin transitions from low to high, the voltage doesn't snap instantly from 0V to 3.3V. It ramps up over a period of nanoseconds, following a curve determined by the pin's drive circuitry and the electrical characteristics of whatever is connected to it. The <strong>slew rate</strong> controls how fast this ramp is.</p>
+
+  <p class="fade-in">A faster slew rate means the signal reaches its target voltage more quickly, which is essential for high-speed communication protocols like SPI at 10MHz or above. But faster edges also radiate more electromagnetic interference (EMI) and can cause <strong>ringing</strong> on long wires, where the signal overshoots and oscillates before settling. This ringing can cause false readings on the receiving end.</p>
+
+  <p class="fade-in">The rule of thumb: use the slowest speed that still meets your timing requirements. Blinking an LED? Use low speed. Driving an SPI bus at 18MHz? Use very high speed. Getting this right is part of what separates a working prototype from a reliable product.</p>
+
+  <h2 class="fade-in">Interrupts Revisited: Edge Sensitivity and Priority</h2>
+
+  <p class="fade-in">Part 00 introduced interrupts as "event listeners for hardware." Now let's look at the details that matter when you actually use them.</p>
+
+  <p class="fade-in"><strong>Edge sensitivity.</strong> You can configure a GPIO interrupt to fire on a rising edge (0→1 transition), a falling edge (1→0), or both. For a button with a pull-up resistor, a falling edge interrupt makes sense because pressing the button pulls the pin from high to low. For a rotary encoder, you'd use both edges to detect direction and speed of rotation.</p>
+
+  <p class="fade-in"><strong>Interrupt priority.</strong> When multiple interrupts fire at the same time (or one fires while another is being handled), the CPU needs to decide which one to service first. ARM Cortex-M microcontrollers have a sophisticated Nested Vectored Interrupt Controller (NVIC) that assigns priority levels to each interrupt source. A motor control interrupt that needs to fire every 50 microseconds would get a higher priority than a button press handler.</p>
+
+  <p class="fade-in"><strong>Keep it short.</strong> Interrupt handlers should do the minimum amount of work necessary: set a flag, copy a value, toggle a pin. Long-running work in an interrupt handler delays other interrupts and can cause the system to miss time-critical events. The pattern is to do the urgent work in the handler and defer everything else to the main loop.</p>
+
+  <a href="https://interrupt.memfault.com/blog/arm-cortex-m-exceptions-and-nvic" class="link-card fade-in" target="_blank">
+    <div class="link-icon">⚡</div>
+    <div class="link-body">
+      <span class="link-title">ARM Cortex-M Exceptions and NVIC (Memfault)</span>
+      <span class="link-desc">An excellent deep dive into how the ARM interrupt system works, with practical examples.</span>
+    </div>
+  </a>
+
+  <h2 class="fade-in">What's Coming Next</h2>
+
+  <p class="fade-in">We've now covered the core of how microcontrollers interact with the outside world: memory-mapped registers control GPIO pins, and interrupts let us respond to events efficiently. The next posts build directly on these concepts:</p>
+
+  <ul class="next-list fade-in">
+    <li><span class="next-num">02</span><span><strong>Timers and PWM</strong> for generating precise waveforms that can dim LEDs, control motor speeds, and produce audio tones.</span></li>
+    <li><span class="next-num">03</span><span><strong>Talking to Other Devices</strong> with UART, SPI, and I²C: the protocols that let microcontrollers communicate with sensors, displays, and each other.</span></li>
+    <li><span class="next-num">04</span><span><strong>Analog In, Analog Out</strong> for reading real-world values like temperature and light, and generating smooth signals with DACs.</span></li>
+    <li><span class="next-num">05</span><span><strong>Power, Sleep, and Battery Life</strong> for designing systems that run for months or years on a single battery.</span></li>
+  </ul>
+
+  <div class="post-footer fade-in">
+    <a href="00-you-already-understand.html">← Prev: You Already Understand</a>
+    <span></span>
+  </div>
+
+  <p class="fade-in footer-note">This series is written from the perspective of someone who spent years building cloud infrastructure before discovering the joy of making software interact with the physical world. If you've ever wondered what's actually happening beneath the abstraction layers, stick around.</p>
+
+</div>
+
+<script src="../assets/js/shared.js"></script>
+
+</body>
+</html>
